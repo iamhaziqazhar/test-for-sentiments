@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './APIStats.css';
-import { getAPIStats } from '../../services/aiService';
 
 function APIStats() {
   const [stats, setStats] = useState({

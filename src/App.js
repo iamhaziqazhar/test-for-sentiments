@@ -1,69 +1,41 @@
+import React, { useState, useEffect } from 'react';
 import './App.css';
-import { useState } from 'react';
-import { sentiments } from './sentiments';
-import { colors } from './colors';
+import LoginPage from './components/Auth/LoginPage';
+import Dashboard from './components/Dashboard/Dashboard';
+import Navigation from './components/Navigation/Navigation';
+import LiveBackground from './components/Background/LiveBackground';
 
 function App() {
-  const [inputText, setInputText] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
-  const [result, setResult] = useState(null);
-
-  const handleAnalyze = () => {
-    const analysis = sentiments(inputText);
-    setResult(analysis);
+  useEffect(() => {
+    const sessionKey = sessionStorage.getItem('userSession');
+    if (sessionKey) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+  const handleLogin = () => {
+    setIsAuthenticated(true);
   };
 
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      handleAnalyze();
-    }
+  const handleLogout = () => {
+    sessionStorage.removeItem('userSession');
+    setIsAuthenticated(false);
+    setCurrentPage('dashboard');
   };
 
-  let resultColor = colors.neutral;
-  if (result) {
-    if (result.sentiment === 'Positive') {
-      resultColor = colors.positive;
-    } else if (result.sentiment === 'Negative') {
-      resultColor = colors.negative;
-    } else {
-      resultColor = colors.neutral;
-    }
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   return (
-    <div className="App">
-      <h1>Sentiment Checker And Words Count</h1>
-
-      <div className="input-section">
-        <label htmlFor="textInput">Enter your text:</label>
-        <textarea
-          id="textInput"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type something here..."
-          rows="6"
-        />
-      </div>
-
-      <button onClick={handleAnalyze} className="analyze-button">
-        Analyze Sentiment
-      </button>
-
-      {result && (
-        <div
-          className="result-box"
-          style={{ backgroundColor: resultColor }}
-        >
-          <h2>{result.sentiment}</h2>
-          <p>Score: {result.score}</p>
-          <div className="details">
-            <span>Total words: {result.totalWords}</span>
-            <span>Positive words: {result.positiveCount}</span>
-            <span>Negative words: {result.negativeCount}</span>
-          </div>
-        </div>
-      )}
+    <div className="app-container">
+      <LiveBackground />
+      <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} onLogout={handleLogout} />
+      <main className="main-content">
+        <Dashboard currentPage={currentPage} />
+      </main>
     </div>
   );
 }
